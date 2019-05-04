@@ -1,4 +1,5 @@
 ﻿using DependencyInjectionWorkshop.Models;
+using DependencyInjectionWorkshop.Models.Decorator;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -12,7 +13,7 @@ namespace DependencyInjectionWorkshopTests
         private const string DefaultHashedPassword = "my hashed password";
         private const string DefaultOneTimePassword = "123456";
         private const int DefaultFailCount = 1;
-        private AuthenticationService _authenticationService;
+        private IAuthenticationService _authenticationService;
         private IFailedCounter _failedCounter;
         private IHashedAdapter _hashedAdapter;
         private ILogAdapter _logAdapter;
@@ -31,8 +32,10 @@ namespace DependencyInjectionWorkshopTests
             _failedCounter = Substitute.For<IFailedCounter>();
 
             _authenticationService = new AuthenticationService(_profileRepo, _hashedAdapter, _otpService,
-                _failedCounter,
-                _logAdapter, _notifyAdapter);
+                _failedCounter, _notifyAdapter);
+            var logDecorator = new LogDecorator(_authenticationService, _logAdapter, _failedCounter);
+
+            _authenticationService = logDecorator;
         }
 
         [Test]

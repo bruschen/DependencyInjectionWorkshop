@@ -76,7 +76,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\AuthenticationService.cs" />
-    <Compile Include="Models\FailedCounter.cs" />
+    <Compile Include="Models\Decorator\LogDecorator.cs" />
+    <Compile Include="Models\IFailedCounter.cs" />
+    <Compile Include="Models\IAuthenticationService.cs" />
     <Compile Include="Models\NLogAdapter.cs" />
     <Compile Include="Models\OtpService.cs" />
     <Compile Include="Models\ProfileRepo.cs" />
