@@ -42,7 +42,7 @@ namespace DependencyInjectionWorkshop.Models
             {
                 _failedCounter.AddFailCounter(accountId);
                 var failCount = _failedCounter.GetFailCounterValue(accountId);
-                _logAdapter.LogMessage($"Fail Count:{failCount}");
+                _logAdapter.LogMessage($"{accountId}-Fail Count:{failCount}");
 
                 _notifyAdapter.Notify();
                 return false;
