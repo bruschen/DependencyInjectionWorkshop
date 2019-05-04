@@ -45,15 +45,33 @@ namespace DependencyInjectionWorkshop.Models
                 throw new Exception($"web api error, accountId:{accountId}");
             }
 
-            if (actualPassword != expectPassword || actualOneTimePassword != expectOneTImePassword)
+            if (actualPassword == expectPassword && actualOneTimePassword == expectOneTImePassword)
             {
+                var httpClient1 = new HttpClient() { BaseAddress = new Uri("http://joey.dev/") };
+                var response2 = httpClient1.PostAsJsonAsync("api/FailCounter/Reset", accountId).Result;
+                if (response2.IsSuccessStatusCode == false)
+                {
+                    throw new Exception($"web api error, accountId:{accountId}");
+                }
+
+                return true;
+            }
+            else
+            {
+                var httpClient1 = new HttpClient() { BaseAddress = new Uri("http://joey.dev/") };
+                var response2 = httpClient1.PostAsJsonAsync("api/FailCounter/Add", accountId).Result;
+                if (response2.IsSuccessStatusCode == false)
+                {
+                    throw new Exception($"web api error, accountId:{accountId}");
+                }
+
+                string temp = response2.Content.ReadAsAsync<string>().Result;
+
                 var slackClient = new SlackClient("my api token");
                 slackClient.PostMessage(response1 => { }, "my channel", "my message", "my bot name");
 
                 return false;
             }
-
-            return true;
         }
     }
 }
