@@ -3,7 +3,16 @@ using System.Net.Http;
 
 namespace DependencyInjectionWorkshop.Models
 {
-    public class FailedCounter
+    public interface IFailedCounter
+    {
+        int GetFailCounterValue(string accountId);
+
+        void AddFailCounter(string accountId);
+
+        void ResetFailCounter(string accountId);
+    }
+
+    public class FailedCounter : IFailedCounter
     {
         public int GetFailCounterValue(string accountId)
         {
@@ -25,6 +34,17 @@ namespace DependencyInjectionWorkshop.Models
             else
             {
                 throw new Exception($"web api FailCounter Add error, accountId:{accountId}");
+            }
+        }
+
+        public void ResetFailCounter(string accountId)
+        {
+            var httpClient2 = new HttpClient() { BaseAddress = new Uri("http://joey.dev/") };
+            var response2 = httpClient2.PostAsJsonAsync("api/FailCounter/Reset", accountId).Result;
+            response2.EnsureSuccessStatusCode();
+            if (response2.IsSuccessStatusCode == false)
+            {
+                throw new Exception($"web api FailCounter reset, accountId:{accountId}");
             }
         }
     }

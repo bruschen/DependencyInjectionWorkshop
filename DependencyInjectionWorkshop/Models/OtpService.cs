@@ -3,7 +3,12 @@ using System.Net.Http;
 
 namespace DependencyInjectionWorkshop.Models
 {
-    public class OtpService
+    public interface IOtpService
+    {
+        string GetOneTimePassword(string accountId);
+    }
+
+    public class OtpService : IOtpService
     {
         public string GetOneTimePassword(string accountId)
         {

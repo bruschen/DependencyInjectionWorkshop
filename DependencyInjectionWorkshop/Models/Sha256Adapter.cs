@@ -2,7 +2,12 @@
 
 namespace DependencyInjectionWorkshop.Models
 {
-    public class Sha256Adapter
+    public interface IHashedAdapter
+    {
+        string GetHashedActualPassword(string actualPassword);
+    }
+
+    public class Sha256Adapter : IHashedAdapter
     {
         public string GetHashedActualPassword(string actualPassword)
         {
