@@ -74,12 +74,19 @@ namespace DependencyInjectionWorkshop.Models
             {
                 var httpClient3 = new HttpClient() { BaseAddress = new Uri("http://joey.dev/") };
                 var response3 = httpClient3.PostAsJsonAsync("api/FailCounter/Add", accountId).Result;
+                response3.EnsureSuccessStatusCode();
                 if (response3.IsSuccessStatusCode == false)
+                {
+                    var response4 = httpClient3.PostAsJsonAsync("api/FailCounter/Get", accountId).Result;
+                    response4.EnsureSuccessStatusCode();
+                    string failCount = response3.Content.ReadAsAsync<string>().Result;
+                    var logger = NLog.LogManager.GetCurrentClassLogger();
+                    logger.Info($"Fail Count:{failCount}");
+                }
+                else
                 {
                     throw new Exception($"web api FailCounter Add error, accountId:{accountId}");
                 }
-
-                string temp = response3.Content.ReadAsAsync<string>().Result;
 
                 var slackClient = new SlackClient("my api token");
                 slackClient.PostMessage(response1 => { }, "my channel", "my message", "my bot name");
