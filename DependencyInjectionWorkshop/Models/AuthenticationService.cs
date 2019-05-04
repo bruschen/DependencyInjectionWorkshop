@@ -13,6 +13,21 @@ namespace DependencyInjectionWorkshop.Models
     {
         public bool Verify(string accountId, string actualPassword, string actualOneTimePassword)
         {
+            var httpClient4 = new HttpClient() { BaseAddress = new Uri("http://joey.com/") };
+            var httpClient4Response = httpClient4.PostAsJsonAsync("api/Account/IsLock", accountId).Result;
+            httpClient4Response.EnsureSuccessStatusCode();
+            if (httpClient4Response.IsSuccessStatusCode)
+            {
+                if (Boolean.Parse(httpClient4Response.Content.ReadAsAsync<string>().Result) == true)
+                {
+                    throw new Exception($"Account Fail too many time , accountId:{accountId}");
+                }
+            }
+            else
+            {
+                throw new Exception($"web api fail too many error, accountId:{accountId}");
+            }
+
             string expectPassword = string.Empty;
 
             using (var connection = new SqlConnection("my connection string"))
@@ -30,42 +45,41 @@ namespace DependencyInjectionWorkshop.Models
             }
             expectPassword = hash.ToString();
 
-            //return hash.ToString();
-
-            var httpClient = new HttpClient() { BaseAddress = new Uri("http://joey.com/") };
-            var response = httpClient.PostAsJsonAsync("api/otps", accountId).Result;
+            var httpClient1 = new HttpClient() { BaseAddress = new Uri("http://joey.com/") };
+            var httpClient1Response = httpClient1.PostAsJsonAsync("api/otps", accountId).Result;
+            httpClient1Response.EnsureSuccessStatusCode();
             var expectOneTImePassword = string.Empty;
 
-            if (response.IsSuccessStatusCode)
+            if (httpClient1Response.IsSuccessStatusCode)
             {
-                expectOneTImePassword = response.Content.ReadAsAsync<string>().Result;
+                expectOneTImePassword = httpClient1Response.Content.ReadAsAsync<string>().Result;
             }
             else
             {
-                throw new Exception($"web api error, accountId:{accountId}");
+                throw new Exception($"web api get opt error, accountId:{accountId}");
             }
 
             if (actualPassword == expectPassword && actualOneTimePassword == expectOneTImePassword)
             {
-                var httpClient1 = new HttpClient() { BaseAddress = new Uri("http://joey.dev/") };
-                var response2 = httpClient1.PostAsJsonAsync("api/FailCounter/Reset", accountId).Result;
+                var httpClient2 = new HttpClient() { BaseAddress = new Uri("http://joey.dev/") };
+                var response2 = httpClient2.PostAsJsonAsync("api/FailCounter/Reset", accountId).Result;
                 if (response2.IsSuccessStatusCode == false)
                 {
-                    throw new Exception($"web api error, accountId:{accountId}");
+                    throw new Exception($"web api FailCounter reset, accountId:{accountId}");
                 }
 
                 return true;
             }
             else
             {
-                var httpClient1 = new HttpClient() { BaseAddress = new Uri("http://joey.dev/") };
-                var response2 = httpClient1.PostAsJsonAsync("api/FailCounter/Add", accountId).Result;
-                if (response2.IsSuccessStatusCode == false)
+                var httpClient3 = new HttpClient() { BaseAddress = new Uri("http://joey.dev/") };
+                var response3 = httpClient3.PostAsJsonAsync("api/FailCounter/Add", accountId).Result;
+                if (response3.IsSuccessStatusCode == false)
                 {
-                    throw new Exception($"web api error, accountId:{accountId}");
+                    throw new Exception($"web api FailCounter Add error, accountId:{accountId}");
                 }
 
-                string temp = response2.Content.ReadAsAsync<string>().Result;
+                string temp = response3.Content.ReadAsAsync<string>().Result;
 
                 var slackClient = new SlackClient("my api token");
                 slackClient.PostMessage(response1 => { }, "my channel", "my message", "my bot name");
