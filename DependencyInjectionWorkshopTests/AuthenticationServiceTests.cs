@@ -7,26 +7,57 @@ namespace DependencyInjectionWorkshopTests
     [TestFixture]
     public class AuthenticationServiceTests
     {
+        private const string DefaultAccountId = "bruschen";
+        private const string DefaultActualPassword = "pw";
+        private const string DefaultHashedPassword = "my hashed password";
+        private const string DefaultOneTimePassword = "123456";
+        private IProfileRepo _profileRepo;
+        private IHashedAdapter _hashedAdapter;
+        private IOtpService _otpService;
+        private ILogAdapter _logAdapter;
+        private INotifyAdapter _notifyAdapter;
+        private IFailedCounter _failedCounter;
+        private AuthenticationService _authenticationService;
+
+        [SetUp]
+        public void Setup()
+        {
+            _profileRepo = Substitute.For<IProfileRepo>();
+            _hashedAdapter = Substitute.For<IHashedAdapter>();
+            _otpService = Substitute.For<IOtpService>();
+            _logAdapter = Substitute.For<ILogAdapter>();
+            _notifyAdapter = Substitute.For<INotifyAdapter>();
+            _failedCounter = Substitute.For<IFailedCounter>();
+
+            _authenticationService = new AuthenticationService(_profileRepo, _hashedAdapter, _otpService, _failedCounter,
+                _logAdapter, _notifyAdapter);
+        }
+
         [Test]
         public void is_valid()
         {
-            var profileRepo = Substitute.For<IProfileRepo>();
-            var hashedAdapter = Substitute.For<IHashedAdapter>();
-            var otpService = Substitute.For<IOtpService>();
-            var logAdapter = Substitute.For<ILogAdapter>();
-            var notifyAdapter = Substitute.For<INotifyAdapter>();
-            var failedCounter = Substitute.For<IFailedCounter>();
-
-            var authenticationService = new AuthenticationService(profileRepo, hashedAdapter, otpService, failedCounter,
-                logAdapter, notifyAdapter);
-
             //設定mock資料
-            otpService.GetOneTimePassword("brus").ReturnsForAnyArgs("123456");
-            profileRepo.GetUserPassword("bruschen").ReturnsForAnyArgs("my hashed password");
-            hashedAdapter.GetHashedActualPassword("pw").ReturnsForAnyArgs("my hashed password");
+            GivenOtp(DefaultAccountId, DefaultOneTimePassword);
+            GivenPassword(DefaultAccountId, DefaultHashedPassword);
+            GivenHashed(DefaultActualPassword, DefaultHashedPassword);
 
-            var isValid = authenticationService.Verify("bruschen", "pw", "123456");
+            var isValid = _authenticationService.Verify(DefaultAccountId, DefaultActualPassword, DefaultOneTimePassword);
             Assert.IsTrue(isValid);
+        }
+
+        private void GivenHashed(string password, string hashedPassword)
+        {
+            _hashedAdapter.GetHashedActualPassword(password).ReturnsForAnyArgs(hashedPassword);
+        }
+
+        private void GivenPassword(string accountId, string hashedPassword)
+        {
+            _profileRepo.GetUserPassword(accountId).ReturnsForAnyArgs(hashedPassword);
+        }
+
+        private void GivenOtp(string accountId, string oneTimePassword)
+        {
+            _otpService.GetOneTimePassword(accountId).ReturnsForAnyArgs(oneTimePassword);
         }
     }
 }
