@@ -15,7 +15,7 @@ namespace MyConsole
             string password = string.Empty;
             string oneTimePassword = string.Empty;
 
-            var result = new AuthenticationService().Verify(accountId, password, oneTimePassword);
+            //var result = new AuthenticationService().Verify(accountId, password, oneTimePassword);
         }
     }
 }

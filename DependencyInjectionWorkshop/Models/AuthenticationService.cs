@@ -6,20 +6,20 @@ namespace DependencyInjectionWorkshop.Models
     public class AuthenticationService
     {
         private readonly IProfileRepo _profileRepo;
-        private readonly IHashedAdapter _sha256Adapter;
+        private readonly IHashedAdapter _hashedAdapter;
         private readonly IOtpService _otpService;
-        private readonly ILogAdapter _nLogAdapter;
-        private readonly INotifyAdapter _slackAdapter;
+        private readonly ILogAdapter _logAdapter;
+        private readonly INotifyAdapter _notifyAdapter;
         private readonly IFailedCounter _failedCounter;
 
-        public AuthenticationService(IProfileRepo profileRepo, IHashedAdapter sha256Adapter, IOtpService otpService, IFailedCounter failedCounter, ILogAdapter nLogAdapter, INotifyAdapter slackAdapter)
+        public AuthenticationService(IProfileRepo profileRepo, IHashedAdapter hashedAdapter, IOtpService otpService, IFailedCounter failedCounter, ILogAdapter logAdapter, INotifyAdapter notifyAdapter)
         {
             _profileRepo = profileRepo;
-            _sha256Adapter = sha256Adapter;
+            _hashedAdapter = hashedAdapter;
             _otpService = otpService;
             _failedCounter = failedCounter;
-            _nLogAdapter = nLogAdapter;
-            _slackAdapter = slackAdapter;
+            _logAdapter = logAdapter;
+            _notifyAdapter = notifyAdapter;
         }
 
         public bool Verify(string accountId, string actualPassword, string actualOneTimePassword)
@@ -28,7 +28,7 @@ namespace DependencyInjectionWorkshop.Models
 
             string expectPassword = _profileRepo.GetUserPassword(accountId);
 
-            actualPassword = _sha256Adapter.GetHashedActualPassword(actualPassword);
+            actualPassword = _hashedAdapter.GetHashedActualPassword(actualPassword);
 
             var expectOneTImePassword = _otpService.GetOneTimePassword(accountId);
 
@@ -42,9 +42,9 @@ namespace DependencyInjectionWorkshop.Models
             {
                 _failedCounter.AddFailCounter(accountId);
                 var failCount = _failedCounter.GetFailCounterValue(accountId);
-                _nLogAdapter.LogMessage($"Fail Count:{failCount}");
+                _logAdapter.LogMessage($"Fail Count:{failCount}");
 
-                _slackAdapter.Notify();
+                _notifyAdapter.Notify();
                 return false;
             }
         }
