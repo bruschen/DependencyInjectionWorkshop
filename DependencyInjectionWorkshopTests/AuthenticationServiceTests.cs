@@ -31,9 +31,10 @@ namespace DependencyInjectionWorkshopTests
             _notifyAdapter = Substitute.For<INotifyAdapter>();
             _failedCounter = Substitute.For<IFailedCounter>();
 
-            _authenticationService = new AuthenticationService(_profileRepo, _hashedAdapter, _otpService,
-                _failedCounter, _notifyAdapter);
-            var logDecorator = new LogDecorator(_authenticationService, _logAdapter, _failedCounter);
+            _authenticationService = new AuthenticationService(_profileRepo, _hashedAdapter, _otpService, _notifyAdapter);
+
+            var failedCounterDecorator = new FailedCounterDecorator(_authenticationService, _failedCounter);
+            var logDecorator = new LogDecorator(failedCounterDecorator, _logAdapter, _failedCounter);
 
             _authenticationService = logDecorator;
         }
