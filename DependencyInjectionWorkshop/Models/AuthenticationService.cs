@@ -24,7 +24,7 @@ namespace DependencyInjectionWorkshop.Models
 
         public bool Verify(string accountId, string actualPassword, string actualOneTimePassword)
         {
-            GetAccountIsLock(accountId);
+            _failedCounter.GetAccountIsLock(accountId);
 
             string expectPassword = _profileRepo.GetUserPassword(accountId);
 
@@ -46,24 +46,6 @@ namespace DependencyInjectionWorkshop.Models
 
                 _slackAdapter.Notify();
                 return false;
-            }
-        }
-
-        private static void GetAccountIsLock(string accountId)
-        {
-            var httpClient4 = new HttpClient() { BaseAddress = new Uri("http://joey.com/") };
-            var httpClient4Response = httpClient4.PostAsJsonAsync("api/Account/IsLock", accountId).Result;
-            httpClient4Response.EnsureSuccessStatusCode();
-            if (httpClient4Response.IsSuccessStatusCode)
-            {
-                if (Boolean.Parse(httpClient4Response.Content.ReadAsAsync<string>().Result) == true)
-                {
-                    throw new Exception($"Account Fail too many time , accountId:{accountId}");
-                }
-            }
-            else
-            {
-                throw new Exception($"web api fail too many error, accountId:{accountId}");
             }
         }
     }

@@ -10,6 +10,8 @@ namespace DependencyInjectionWorkshop.Models
         void AddFailCounter(string accountId);
 
         void ResetFailCounter(string accountId);
+
+        void GetAccountIsLock(string accountId);
     }
 
     public class FailedCounter : IFailedCounter
@@ -45,6 +47,24 @@ namespace DependencyInjectionWorkshop.Models
             if (response2.IsSuccessStatusCode == false)
             {
                 throw new Exception($"web api FailCounter reset, accountId:{accountId}");
+            }
+        }
+
+        public void GetAccountIsLock(string accountId)
+        {
+            var httpClient4 = new HttpClient() { BaseAddress = new Uri("http://joey.com/") };
+            var httpClient4Response = httpClient4.PostAsJsonAsync("api/Account/IsLock", accountId).Result;
+            httpClient4Response.EnsureSuccessStatusCode();
+            if (httpClient4Response.IsSuccessStatusCode)
+            {
+                if (Boolean.Parse(httpClient4Response.Content.ReadAsAsync<string>().Result) == true)
+                {
+                    throw new Exception($"Account Fail too many time , accountId:{accountId}");
+                }
+            }
+            else
+            {
+                throw new Exception($"web api fail too many error, accountId:{accountId}");
             }
         }
     }
