@@ -41,8 +41,18 @@ namespace DependencyInjectionWorkshopTests
             GivenPassword(DefaultAccountId, DefaultHashedPassword);
             GivenHashed(DefaultActualPassword, DefaultHashedPassword);
 
-            var isValid = _authenticationService.Verify(DefaultAccountId, DefaultActualPassword, DefaultOneTimePassword);
+            var isValid = WhenVerify(DefaultAccountId, DefaultActualPassword, DefaultOneTimePassword);
+            ShouldBeValid(isValid);
+        }
+
+        private static void ShouldBeValid(bool isValid)
+        {
             Assert.IsTrue(isValid);
+        }
+
+        private bool WhenVerify(string accountId, string password, string oneTimePassword)
+        {
+            return _authenticationService.Verify(accountId, password, oneTimePassword);
         }
 
         private void GivenHashed(string password, string hashedPassword)
